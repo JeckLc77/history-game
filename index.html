@@ -234,7 +234,7 @@
       <span class="score-chip">⭐ <span id="tb-score">0</span></span>
       <button class="wrong-btn" id="btn-wrongbook">错题本 · <span id="tb-wrong">0</span></button>
     </div>
-    <img class="stage-img" src="hero.webp" alt="">
+    <img class="stage-img" id="stage-img" src="hero.webp" alt="">
     <div class="play" id="play"></div>
   </section>
 
@@ -286,7 +286,7 @@ const CHALLENGES = ["q", "battle", "boss", "judge", "cloze", "match", "sort", "m
 const $ = id => document.getElementById(id);
 const letters = ["A", "B", "C", "D"];
 const play = $("play");
-let cur = null, STEPS = [], totalQ = 0;
+let cur = null, STEPS = [], totalQ = 0, stepImg = [];
 let idx = 0, score = 0, rightCount = 0, wrongList = [], bossHp = 3, bossTotal = 1;
 
 function show(id) {
@@ -332,6 +332,10 @@ function startLesson(id) {
   totalQ = STEPS.filter(s => CHALLENGES.includes(s.t)).length;
   bossTotal = Math.max(1, STEPS.filter(s => s.t === "boss").length);
   idx = 0; score = 0; rightCount = 0; wrongList = []; bossHp = bossTotal;
+  let chN = 0;
+  stepImg = STEPS.map(s => CHALLENGES.includes(s.t) ? "q-" + cur.id + "-" + String(++chN).padStart(2, "0") + ".webp" : null);
+  for (let i = stepImg.length - 1; i >= 0; i--) { if (!stepImg[i]) stepImg[i] = stepImg[i + 1] || ("art-" + cur.id + ".webp"); }
+  $("stage-img").src = "art-" + cur.id + ".webp";
   $("tb-chapter").textContent = "第 " + cur.no + " 课";
   show("scr-game");
   step();
@@ -362,6 +366,7 @@ function step() {
   if (idx >= STEPS.length) return finish();
   const s = STEPS[idx];
   if (s.t === "chapter") { $("tb-chapter").textContent = s.name; idx++; return step(); }
+  if (stepImg[idx]) $("stage-img").src = stepImg[idx];
   updateBar();
   if (s.t === "story") renderStory(s);
   else if (s.t === "q") renderQ(s);
@@ -652,6 +657,11 @@ $("btn-share").onclick = () => {
 };
 $("btn-wrongbook").onclick = () => { renderWrongInto($("modal-wrong-list")); $("modal-wrong").classList.add("on"); };
 $("btn-close-wrong").onclick = () => $("modal-wrong").classList.remove("on");
+$("stage-img").onerror = function () {
+  const s = this.src;
+  if (s.includes("/q-")) { const m = s.match(/q-(L\d+)-/); this.src = m ? "art-" + m[1] + ".webp" : "hero.webp"; }
+  else if (!s.includes("hero.webp")) this.src = "hero.webp";
+};
 if (localStorage.getItem("hg_auth_key")) { renderHome(); show("scr-home"); }
 </script>
 </body>
