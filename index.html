@@ -109,6 +109,16 @@
   .mcard { font-family:inherit; font-size:15px; color:#e7edfb; background:rgba(255,255,255,.05); border:1.5px solid rgba(160,185,240,.25); border-radius:12px; padding:13px 10px; cursor:pointer; line-height:1.5; min-height:52px; }
   .mcard.sel { border-color:#ffd23e; background:rgba(255,210,62,.13); }
   .mcard.done { border-color:#43d68a; background:rgba(67,214,138,.13); color:#a9ecc9; cursor:default; }
+  .mcard { position:relative; }
+  .mcard.pairc-0 { border-color:#43d68a; background:rgba(67,214,138,.16); color:#a9ecc9; }
+  .mcard.pairc-1 { border-color:#ffd23e; background:rgba(255,210,62,.14); color:#ffe98a; }
+  .mcard.pairc-2 { border-color:#ff8fb3; background:rgba(255,143,179,.15); color:#ffc2d4; }
+  .mcard.pairc-3 { border-color:#b79cff; background:rgba(183,156,255,.16); color:#d5c6ff; }
+  .pair-badge { position:absolute; top:-9px; right:-7px; width:22px; height:22px; border-radius:50%; font-size:13px; font-weight:700; color:#101c38; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,.45); z-index:3; }
+  .pb-0 { background:#43d68a; } .pb-1 { background:#ffd23e; } .pb-2 { background:#ff8fb3; } .pb-3 { background:#b79cff; }
+  .mem-card.pairc-0 .mem-front { border-color:#43d68a; background:rgba(67,214,138,.16); color:#a9ecc9; }
+  .mem-card.pairc-1 .mem-front { border-color:#ffd23e; background:rgba(255,210,62,.14); color:#ffe98a; }
+  .mem-card.pairc-2 .mem-front { border-color:#ff8fb3; background:rgba(255,143,179,.15); color:#ffc2d4; }
   .mcard.wrongpair { animation:shake .3s; border-color:#ff7b7b; }
   .sort-slots { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
   .slot { border:1.5px dashed rgba(160,185,240,.35); border-radius:12px; padding:11px 14px; font-size:14.5px; color:#63719a; min-height:46px; }
@@ -519,9 +529,12 @@ function renderMatch(s) {
       } else if (selLeft >= 0) {
         const ri = +c.dataset.i;
         if (ri === selLeft) {
-          c.classList.add("done");
+          c.classList.add("done", "pairc-" + ri);
+          c.insertAdjacentHTML("beforeend", '<span class="pair-badge pb-' + ri + '">' + (ri + 1) + '</span>');
           const lc = play.querySelector('.mcard[data-side="L"][data-i="' + selLeft + '"]');
-          lc.classList.add("done"); lc.classList.remove("sel");
+          lc.classList.add("done", "pairc-" + selLeft);
+          lc.insertAdjacentHTML("beforeend", '<span class="pair-badge pb-' + selLeft + '">' + (selLeft + 1) + '</span>');
+          lc.classList.remove("sel");
           selLeft = -1; matched++;
           if (matched === s.pairs.length) {
             const ok = mistakes === 0;
@@ -589,7 +602,9 @@ function renderMemory(s) {
         lock = true;
         const [x, y] = open;
         if (x.dataset.k === y.dataset.k) {
-          setTimeout(() => { x.classList.add("matched"); y.classList.add("matched"); matched++; open = []; lock = false;
+          setTimeout(() => { x.classList.add("matched", "pairc-" + x.dataset.k); y.classList.add("matched", "pairc-" + y.dataset.k);
+            [x, y].forEach(cd => cd.insertAdjacentHTML("beforeend", '<span class="pair-badge pb-' + cd.dataset.k + '">' + (+cd.dataset.k + 1) + '</span>'));
+            matched++; open = []; lock = false;
             $("mem-stat").textContent = "已配对 " + matched + " / " + s.cards.length + " 组 · 翻错 " + mistakes + " 次";
             if (matched === s.cards.length) {
               const ok = mistakes <= 2;
